@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#6c63ff">
+<meta name="description" content="On-device document editor with OCR, translation and signatures">
+<title>1Stop Pdf</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <header class="header">
+    <span class="header-logo">1Stop Pdf</span>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-icon" id="btn-undo" title="Undo (Ctrl+Z)">↩</button>
+      <button class="btn btn-ghost btn-icon" id="btn-zoom-out" title="Zoom out">−</button>
+      <span class="zoom-label" id="zoom-label">100%</span>
+      <button class="btn btn-ghost btn-icon" id="btn-zoom-in" title="Zoom in">+</button>
+      <button class="btn btn-primary btn-icon" id="btn-install" title="Install app" style="display:none">⬇ Install</button>
+      <button class="btn btn-success" id="btn-save" title="Save / Export (Ctrl+S)">💾 Save</button>
+    </div>
+  </header>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn btn-ghost btn-icon" id="tb-home" title="Home" data-tab="home">🏠</button>
+    <button class="btn btn-ghost btn-icon" id="tb-dashboard" title="Dashboard" data-tab="dashboard">📊</button>
+    <div class="toolbar-sep"></div>
+    <button class="btn btn-ghost" id="tb-open" title="Open file">📂 Open</button>
+    <button class="btn btn-ghost" id="tb-scan" title="Scan with camera">📷 Scan</button>
+    <div class="toolbar-sep"></div>
+    <button class="btn btn-ghost" id="tb-text" title="Add text box">🅣 Text</button>
+    <button class="btn btn-ghost" id="tb-sign" title="Signatures" data-panel="sign">✍️ Sign</button>
+    <div class="toolbar-sep"></div>
+    <button class="btn btn-ghost" id="tb-ocr" title="Run OCR" data-panel="ocr">🔎 OCR</button>
+    <button class="btn btn-ghost" id="tb-translate" title="Translate" data-panel="translate">🌐 Translate</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active" data-stab="pages">Pages</div>
+        <div class="sidebar-tab" data-stab="layers">Layers</div>
+      </div>
+      <div class="sidebar-content" id="sidebar-content"></div>
+    </aside>
+
+    <!-- HOME TAB -->
+    <div class="tab-content home-tab active" id="tab-home">
+      <div class="home-hero">
+        <h1>1Stop Pdf</h1>
+        <p>Edit documents on-device. OCR, signatures, translation — all in your browser, no upload needed.</p>
+        <button class="btn btn-primary" style="margin-bottom:32px" onclick="document.getElementById('file-input').click()">📂 Open Document</button>
+        <div class="features-grid">
+          <div class="feature-card"><div class="feature-icon">📄</div><div class="feature-title">PDF & Images</div><div class="feature-desc">Open PDF, JPG, PNG, WebP, DOCX and edit in place</div></div>
+          <div class="feature-card"><div class="feature-icon">🔎</div><div class="feature-title">OCR</div><div class="feature-desc">Recognise text from scans — fully offline with Tesseract.js</div></div>
+          <div class="feature-card"><div class="feature-icon">✍️</div><div class="feature-title">Signatures</div><div class="feature-desc">Draw, type or upload. Drag & resize on any page</div></div>
+          <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">Translate</div><div class="feature-desc">50+ languages including all 11 South African official languages</div></div>
+          <div class="feature-card"><div class="feature-icon">🅣</div><div class="feature-title">Edit OCR Text</div><div class="feature-desc">Editable text boxes placed at their exact scanned positions</div></div>
+          <div class="feature-card"><div class="feature-icon">💾</div><div class="feature-title">Format-Preserving Export</div><div class="feature-desc">PDF→PDF, image→image, DOCX→DOCX, or searchable PDF</div></div>
+        </div>
+        <div class="facts-card">
+          <div class="fact-label">📡 Did you know?</div>
+          <div class="fact-text" id="fact-text">Loading a fact…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div class="tab-content dashboard-tab" id="tab-dashboard">
+      <h2 style="margin-bottom:20px">📊 Dashboard</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-value" id="stat-docs">0</div><div class="stat-label">Documents opened</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-ocr">0</div><div class="stat-label">OCR runs</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-sigs">0</div><div class="stat-label">Signatures placed</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-saves">0</div><div class="stat-label">Documents saved</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-translates">0</div><div class="stat-label">Translations</div></div>
+      </div>
+      <button class="btn btn-danger" id="btn-reset-stats" style="margin-top:8px">Reset Stats</button>
+    </div>
+
+    <!-- DOCUMENT TAB -->
+    <div class="tab-content" id="tab-doc">
+      <div class="canvas-area" id="canvas-area">
+        <div id="no-doc" style="text-align:center;padding:60px 20px;color:var(--text-dim)">
+          <div style="font-size:3rem;margin-bottom:12px">📂</div>
+          <p>Open a document to get started</p>
+          <label class="drop-zone" for="file-input" id="drop-zone">
+            <div class="drop-zone-icon">⬆️</div>
+            <p>Click or drag & drop a PDF, image, or Word file here</p>
+          </label>
+        </div>
+        <div class="canvas-wrap" id="canvas-wrap" style="display:none">
+          <canvas id="main-canvas"></canvas>
+          <div class="overlay-container" id="overlay"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.webp,.bmp,.docx,image/*" style="display:none">
+<input type="file" id="cam-input" accept="image/*" capture="environment" style="display:none">
+
+<!-- PROGRESS -->
+<div class="progress-bar" id="progress"></div>
+
+<!-- TOASTS -->
+<div id="toast-container"></div>
+
+<!-- ===== SIGN PANEL ===== -->
+<div class="panel" id="panel-sign">
+  <div class="panel-header">
+    <span class="panel-title">✍️ Signature</span>
+    <button class="btn btn-ghost btn-icon" data-close-panel="sign">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="form-row">
+      <label>Mode</label>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-secondary" id="sig-mode-draw" onclick="setSigMode('draw')">✏️ Draw</button>
+        <button class="btn btn-secondary" id="sig-mode-type" onclick="setSigMode('type')">🅣 Type</button>
+        <button class="btn btn-secondary" id="sig-mode-upload" onclick="setSigMode('upload')">⬆️ Upload</button>
+      </div>
+    </div>
+    <div id="sig-draw-area">
+      <canvas id="sig-canvas"></canvas>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost" id="btn-sig-clear">🗑 Clear</button>
+        <select id="sig-color" style="width:auto;flex:1">
+          <option value="#1a1a2e">Dark Blue</option>
+          <option value="#000000">Black</option>
+          <option value="#1d4ed8">Blue</option>
+          <option value="#dc2626">Red</option>
+        </select>
+      </div>
+    </div>
+    <div id="sig-type-area" style="display:none">
+      <div class="form-row">
+        <label>Your name / initials</label>
+        <input type="text" id="sig-type-text" placeholder="e.g. John Smith">
+      </div>
+      <div class="form-row">
+        <label>Font</label>
+        <select id="sig-type-font">
+          <option value="'Dancing Script',cursive">Dancing Script</option>
+          <option value="'Great Vibes',cursive">Great Vibes</option>
+          <option value="Georgia,serif">Georgia</option>
+          <option value="'Brush Script MT',cursive">Brush Script</option>
+        </select>
+      </div>
+    </div>
+    <div id="sig-upload-area" style="display:none">
+      <label class="drop-zone" for="sig-file" style="padding:24px">
+        <div class="drop-zone-icon">🖼</div>
+        <p>Click to upload signature image (PNG with transparency recommended)</p>
+      </label>
+      <input type="file" id="sig-file" accept="image/*" style="display:none">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-primary" id="btn-place-sig">Place on Document</button>
+  </div>
+</div>
+
+<!-- ===== OCR PANEL ===== -->
+<div class="panel" id="panel-ocr">
+  <div class="panel-header">
+    <span class="panel-title">🔎 OCR</span>
+    <button class="btn btn-ghost btn-icon" data-close-panel="ocr">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="form-row">
+      <label>Language</label>
+      <select id="ocr-lang">
+        <option value="eng">English</option>
+        <option value="afr">Afrikaans</option>
+        <option value="zul">Zulu (isiZulu)</option>
+        <option value="xho">Xhosa (isiXhosa)</option>
+        <option value="sot">Sesotho</option>
+        <option value="nso">Sepedi (Sesotho sa Leboa)</option>
+        <option value="tsn">Setswana</option>
+        <option value="tso">Xitsonga</option>
+        <option value="ssw">siSwati</option>
+        <option value="nbl">isiNdebele</option>
+        <option value="ven">Tshivenda</option>
+        <option value="fra">French</option>
+        <option value="deu">German</option>
+        <option value="spa">Spanish</option>
+        <option value="por">Portuguese</option>
+        <option value="ita">Italian</option>
+        <option value="nld">Dutch</option>
+        <option value="rus">Russian</option>
+        <option value="chi_sim">Chinese (Simplified)</option>
+        <option value="jpn">Japanese</option>
+        <option value="ara">Arabic</option>
+        <option value="hin">Hindi</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn btn-primary" id="btn-run-ocr" style="flex:1">🔎 Run OCR</button>
+      <button class="btn btn-secondary" id="btn-ocr-edit" style="flex:1">✏️ Edit in place</button>
+    </div>
+    <div class="ocr-text" id="ocr-output" style="display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:8px" id="ocr-actions" style="display:none">
+      <button class="btn btn-secondary" id="btn-ocr-copy">📋 Copy</button>
+      <button class="btn btn-secondary" id="btn-ocr-searchable">📄 Searchable PDF</button>
+      <button class="btn btn-secondary" id="btn-ocr-translate">🌐 Translate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TRANSLATE PANEL ===== -->
+<div class="panel" id="panel-translate">
+  <div class="panel-header">
+    <span class="panel-title">🌐 Translate</span>
+    <button class="btn btn-ghost btn-icon" data-close-panel="translate">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="lang-row">
+      <select id="tr-from">
+        <option value="auto">Auto-detect</option>
+        <option value="en">English</option>
+        <option value="af">Afrikaans</option>
+        <option value="zu">Zulu</option>
+        <option value="xh">Xhosa</option>
+        <option value="st">Sesotho</option>
+        <option value="nso">Sepedi</option>
+        <option value="tn">Setswana</option>
+        <option value="ts">Xitsonga</option>
+        <option value="ss">siSwati</option>
+        <option value="nr">isiNdebele</option>
+        <option value="ve">Tshivenda</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+        <option value="pt">Portuguese</option>
+        <option value="it">Italian</option>
+        <option value="nl">Dutch</option>
+        <option value="ru">Russian</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ar">Arabic</option>
+        <option value="hi">Hindi</option>
+        <option value="sw">Swahili</option>
+        <option value="tr">Turkish</option>
+        <option value="pl">Polish</option>
+        <option value="uk">Ukrainian</option>
+        <option value="ko">Korean</option>
+      </select>
+      <button class="swap-btn" id="btn-lang-swap">⇅</button>
+      <select id="tr-to">
+        <option value="en">English</option>
+        <option value="af">Afrikaans</option>
+        <option value="zu">Zulu</option>
+        <option value="xh">Xhosa</option>
+        <option value="st">Sesotho</option>
+        <option value="nso">Sepedi</option>
+        <option value="tn">Setswana</option>
+        <option value="ts">Xitsonga</option>
+        <option value="ss">siSwati</option>
+        <option value="nr">isiNdebele</option>
+        <option value="ve">Tshivenda</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+        <option value="pt">Portuguese</option>
+        <option value="it">Italian</option>
+        <option value="nl">Dutch</option>
+        <option value="ru">Russian</option>
+        <option value="zh">Chinese</option>
+        <option value="ja">Japanese</option>
+        <option value="ar">Arabic</option>
+        <option value="hi">Hindi</option>
+        <option value="sw">Swahili</option>
+        <option value="tr">Turkish</option>
+        <option value="pl">Polish</option>
+        <option value="uk">Ukrainian</option>
+        <option value="ko">Korean</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Source text</label>
+      <textarea id="tr-input" rows="6" placeholder="Paste or type text to translate…"></textarea>
+    </div>
+    <button class="btn btn-primary" id="btn-translate" style="width:100%;margin-bottom:12px">🌐 Translate</button>
+    <div class="form-row">
+      <label>Translation</label>
+      <textarea id="tr-output" rows="6" readonly placeholder="Translation will appear here…"></textarea>
+    </div>
+    <button class="btn btn-secondary" id="btn-tr-copy">📋 Copy translation</button>
+  </div>
+</div>
+
+<!-- PANEL BACKDROP -->
+<div id="panel-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:199;display:none"></div>
+
+<!-- GOOGLE FONTS FOR SIGNATURES -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<script src="./app.js"></script>
+</body>
+</html>
