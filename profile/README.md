@@ -41,6 +41,17 @@ Finds hardcoded secrets, overly permissive permissions, hook-injection risks, MC
 
 ---
 
+## 🗂️ Side Projects
+
+Small, self-contained apps hosted straight from this repo via GitHub Pages — no backend, no build step.
+
+| Project | What it is |
+|---------|------------|
+| [**Awesome Prompts Browser**](https://pshomang.github.io/.github/) | A searchable static site for browsing [ai-boost/awesome-prompts](https://github.com/ai-boost/awesome-prompts) by category, with full prompt text and copy-to-clipboard. |
+| [**AMEN**](https://pshomang.github.io/.github/amen-app/) | A daily situational-scripture app for young professionals: workplace-context Bible verses, a Historical vs. Modern toggle, and a one-tap WhatsApp discussion-starter generator for small groups. |
+
+---
+
 ## 💬 Community
 
 | Where | What |
