@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMEN - Workplace Word</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // 30 Verified NKJV Verses (Fair Use compliant)
+        const seedData = [
+            // Category: Anxiety & Pressure
+            { id: 1, category: "Anxiety", ref: "Philippians 4:6", text: "Be anxious for nothing, but in everything by prayer and supplication, with thanksgiving, let your requests be made known to God;", historical: "Paul writing from a Roman prison, urging believers to replace worry with prayer.", modern: "That deadline or difficult client meeting isn't too small to pray about right now.", question: "What work stress do you need to hand over to God today?" },
+            { id: 2, category: "Anxiety", ref: "Isaiah 41:10", text: "Fear not, for I am with you; Be not dismayed, for I am your God. I will strengthen you, Yes, I will help you, I will uphold you with My righteous right hand.", historical: "God's promise to Israel during exile.", modern: "You are not navigating your career alone; God's hand is actively supporting you.", question: "Where do you feel most unsupported right now?" },
+            { id: 3, category: "Anxiety", ref: "Psalm 94:19", text: "In the multitude of my anxieties within me, Your comforts delight my soul.", historical: "The psalmist finding solace in God amidst wicked oppressors.", modern: "When your mind is racing at 2 AM about tomorrow's tasks, His presence is the antidote.", question: "How can you intentionally seek His comfort when overthinking?" },
+            { id: 4, category: "Anxiety", ref: "Matthew 6:34", text: "Therefore do not worry about tomorrow, for tomorrow will worry about its own things. Sufficient for the day is its own trouble.", historical: "Jesus teaching on the Mount about trusting the Father's provision.", modern: "Focus on today's emails and today's meetings. Tomorrow's problems can wait.", question: "Are you projecting today's fears onto tomorrow's schedule?" },
+            { id: 5, category: "Anxiety", ref: "1 Peter 5:7", text: "casting all your care upon Him, for He cares for you.", historical: "Peter instructing elders to be humble and trust God.", modern: "Literally 'throw' your career anxieties onto God. He can handle the weight.", question: "What 'care' are you refusing to let go of?" },
+
+            // Category: Workplace Integrity & Leadership
+            { id: 6, category: "Leadership", ref: "Proverbs 11:3", text: "The integrity of the upright will guide them, But the perversity of the unfaithful will destroy them.", historical: "Wisdom literature contrasting the righteous and the wicked.", modern: "Don't cut corners on that report. Integrity is your best career strategy.", question: "Is there a gray area at work where you need to choose integrity today?" },
+            { id: 7, category: "Leadership", ref: "Colossians 3:23", text: "And whatever you do, do it heartily, as to the Lord and not to men,", historical: "Paul instructing bondservants on their work ethic.", modern: "Your true boss isn't your line manager; it's Christ. Let that dictate your effort.", question: "How does your work quality change if Jesus is reviewing it?" },
+            { id: 8, category: "Leadership", ref: "Proverbs 16:3", text: "Commit your works to the Lord, And your thoughts will be established.", historical: "A proverb emphasizing total reliance on Yahweh.", modern: "Before you send that proposal, hand the outcome over to God.", question: "What specific task today are you holding onto too tightly?" },
+            { id: 9, category: "Leadership", ref: "Titus 2:7", text: "in all things showing yourself to be a pattern of good works; in doctrine showing integrity, reverence, incorruptibility,", historical: "Paul advising Titus on modeling behavior for the church.", modern: "Be the standard of excellence and honesty in your office.", question: "Does your work ethic reflect your faith to your colleagues?" },
+            { id: 10, category: "Leadership", ref: "Proverbs 22:29", text: "Do you see a man who excels in his work? He will stand before kings; He will not stand before unknown men.", historical: "Observation on the reward of skill and diligence.", modern: "Master your craft. God uses excellence to give you a platform.", question: "What skill do you need to sharpen to serve better?" },
+
+            // Category: Dealing with Difficult People
+            { id: 11, category: "Conflict", ref: "Proverbs 15:1", text: "A soft answer turns away wrath, But a harsh word stirs up anger.", historical: "Practical wisdom on de-escalating conflict.", modern: "Draft the angry email, delete it, and reply with grace. It diffuses tension.", question: "Who at work requires a 'soft answer' from you today?" },
+            { id: 12, category: "Conflict", ref: "Romans 12:18", text: "If it is possible, as much as depends on you, live peaceably with all men.", historical: "Paul's practical guide to Christian living in community.", modern: "You can't control a toxic boss, but you can control your own responses.", question: "Are you doing 'as much as depends on you' to keep peace?" },
+            { id: 13, category: "Conflict", ref: "Ephesians 4:29", text: "Let no corrupt word proceed out of your mouth, but what is good for necessary edification, that it may impart grace to the hearers.", historical: "Instructions on living the new life in Christ.", modern: "Avoid the office gossip. Use your words to build up your team.", question: "Did your words build up or tear down your colleagues today?" },
+            { id: 14, category: "Conflict", ref: "James 1:19", text: "So then, my beloved brethren, let every man be swift to hear, slow to speak, slow to wrath;", historical: "James advising on practical righteousness.", modern: "Listen fully in the meeting before firing back your opinion.", question: "Are you listening to understand, or listening to reply?" },
+            { id: 15, category: "Conflict", ref: "Matthew 5:44", text: "But I say to you, love your enemies, bless those who curse you, do good to those who hate you, and pray for those who spitefully use you and persecute you,", historical: "Jesus redefining love in the Sermon on the Mount.", modern: "Pray for the coworker who takes credit for your work.", question: "Can you honestly pray for the success of your hardest colleague?" },
+
+            // Category: Ambition & Provision
+            { id: 16, category: "Provision", ref: "Matthew 6:33", text: "But seek first the kingdom of God and His righteousness, and all these things shall be added to you.", historical: "The climax of Jesus' teaching on worry.", modern: "Prioritize God's ways over the hustle, and trust Him with the promotion.", question: "Are you seeking the Kingdom first, or your career first?" },
+            { id: 17, category: "Provision", ref: "Philippians 4:19", text: "And my God shall supply all your need according to His riches in glory by Christ Jesus.", historical: "Paul thanking the Philippians for their financial support.", modern: "The company pays your salary, but God is your actual provider.", question: "Do you view your job or God as your source of security?" },
+            { id: 18, category: "Provision", ref: "Deuteronomy 8:18", text: "And you shall remember the Lord your God, for it is He who gives you power to get wealth, that He may establish His covenant which He swore to your fathers, as it is this day.", historical: "Moses warning Israel not to forget God in their prosperity.", modern: "Your intellect and opportunities are gifts from God, not just self-made hustle.", question: "Have you thanked God for the ability to do your job?" },
+            { id: 19, category: "Provision", ref: "Proverbs 3:9", text: "Honor the Lord with your possessions, And with the firstfruits of all your increase;", historical: "Wisdom on generosity and trusting God with wealth.", modern: "Be generous with your first paycheck, not just what's left over.", question: "How does your budget reflect your faith?" },
+            { id: 20, category: "Provision", ref: "Hebrews 13:5", text: "Let your conduct be without covetousness; be content with such things as you have. For He Himself has said, 'I will never leave you nor forsake you.'", historical: "Exhortation to Hebrew Christians facing persecution and loss.", modern: "Don't let the pursuit of the next salary bracket rob you of present peace.", question: "Are you striving for more out of ambition or lack of contentment?" },
+
+            // Category: Exhaustion & Burnout
+            { id: 21, category: "Burnout", ref: "Matthew 11:28", text: "Come to Me, all you who labor and are heavy laden, and I will give you rest.", historical: "Jesus offering an alternative to the heavy yoke of the Pharisees.", modern: "When you are nearing burnout, the first step isn't a vacation, it's Jesus.", question: "Are you resting in Christ, or just escaping through entertainment?" },
+            { id: 22, category: "Burnout", ref: "Isaiah 40:31", text: "But those who wait on the Lord Shall renew their strength; They shall mount up with wings like eagles, They shall run and not be weary, They shall walk and not faint.", historical: "Encouragement to weary exiles to trust God's timing.", modern: "Patience and waiting on God's timing prevents career burnout.", question: "Are you running on your own strength today?" },
+            { id: 23, category: "Burnout", ref: "Psalm 23:2", text: "He makes me to lie down in green pastures; He leads me beside the still waters.", historical: "David describing God as the ultimate, providing Shepherd.", modern: "Sometimes God allows a pause in your career so you can actually rest.", question: "Are you resisting the rest God is trying to give you?" },
+            { id: 24, category: "Burnout", ref: "Exodus 33:14", text: "And He said, 'My Presence will go with you, and I will give you rest.'", historical: "God promising Moses His presence on the journey.", modern: "You don't have to leave the office to find rest; His presence is with you there.", question: "How can you practice the presence of God during a busy workday?" },
+            { id: 25, category: "Burnout", ref: "Mark 6:31", text: "And He said to them, 'Come aside by yourselves to a deserted place and rest a while.' For there were many coming and going, and they did not even have time to eat.", historical: "Jesus pulling the disciples away from overwhelming ministry demands.", modern: "It is deeply biblical to close your laptop and take a break.", question: "When is your next intentional period of rest?" },
+
+            // Category: New Believer / Foundation
+            { id: 26, category: "Foundation", ref: "2 Corinthians 5:17", text: "Therefore, if anyone is in Christ, he is a new creation; old things have passed away; behold, all things have become new.", historical: "Paul explaining the transformative power of the Gospel.", modern: "Your past mistakes don't define your future trajectory in Christ.", question: "What 'old thing' are you struggling to leave behind?" },
+            { id: 27, category: "Foundation", ref: "Romans 8:1", text: "There is therefore now no condemnation to those who are in Christ Jesus, who do not walk according to the flesh, but according to the Spirit.", historical: "The cornerstone of grace over the law.", modern: "When you mess up at work or in life, conviction helps you grow, but condemnation is a lie.", question: "Are you carrying guilt that Jesus already paid for?" },
+            { id: 28, category: "Foundation", ref: "Ephesians 2:8", text: "For by grace you have been saved through faith, and that not of yourselves; it is the gift of God,", historical: "Paul emphasizing that salvation cannot be earned.", modern: "You earn your salary, but you can never earn God's love. It's a free gift.", question: "Are you trying to perform for God like you perform for your boss?" },
+            { id: 29, category: "Foundation", ref: "John 1:12", text: "But as many as received Him, to them He gave the right to become children of God, to those who believe in His name:", historical: "John's prologue establishing the identity of believers.", modern: "Your primary identity is not 'Manager' or 'Director', it is 'Child of God'.", question: "Does your work define you more than your faith?" },
+            { id: 30, category: "Foundation", ref: "Psalm 119:105", text: "Your word is a lamp to my feet And a light to my path.", historical: "The longest psalm, celebrating the power of God's law.", modern: "You don't need a 5-year plan. You just need enough light for the next step.", question: "What is the very next step God is asking you to take?" }
+        ];
+
+        const App = () => {
+            const [view, setView] = useState('home');
+            const [streak, setStreak] = useState(0);
+            const [selectedCategory, setSelectedCategory] = useState(null);
+            const [currentVerse, setCurrentVerse] = useState(null);
+            const [showModern, setShowModern] = useState(false);
+
+            // First-Fruits Logic
+            useEffect(() => {
+                const today = new Date().toDateString();
+                const lastOpened = localStorage.getItem('amen_lastOpened');
+                let currentStreak = parseInt(localStorage.getItem('amen_streak') || '0');
+
+                if (lastOpened !== today) {
+                    // Simple logic: if they opened it today, increment streak.
+                    // In a real app, you'd check if yesterday was logged to maintain streak.
+                    currentStreak += 1;
+                    localStorage.setItem('amen_lastOpened', today);
+                    localStorage.setItem('amen_streak', currentStreak.toString());
+                }
+                setStreak(currentStreak);
+            }, []);
+
+            const categories = [...new Set(seedData.map(v => v.category))];
+
+            const handleCategorySelect = (cat) => {
+                const versesInCat = seedData.filter(v => v.category === cat);
+                const randomVerse = versesInCat[Math.floor(Math.random() * versesInCat.length)];
+                setCurrentVerse(randomVerse);
+                setSelectedCategory(cat);
+                setShowModern(false);
+                setView('verse');
+            };
+
+            const shareToWhatsApp = () => {
+                const text = `*"${currentVerse.ref}"*\n${currentVerse.text}\n\n*Application:*\n${currentVerse.modern}\n\n*Discuss:*\n${currentVerse.question}\n\n_Read via AMEN._`;
+                const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            };
+
+            if (view === 'home') {
+                return (
+                    <div className="max-w-md mx-auto min-h-screen bg-white p-6 shadow-lg fade-in">
+                        <header className="flex justify-between items-center mb-10 mt-6">
+                            <h1 className="text-3xl font-black tracking-tighter text-gray-900">AMEN.</h1>
+                            <div className="text-right">
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">First-Fruits</p>
+                                <p className="text-xl font-bold text-green-600">{streak} Days 🔥</p>
+                            </div>
+                        </header>
+
+                        <main>
+                            <h2 className="text-xl font-semibold mb-6 text-gray-800">What are you facing today?</h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => handleCategorySelect(cat)}
+                                        className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-left hover:bg-gray-100 transition-colors shadow-sm"
+                                    >
+                                        <p className="font-bold text-gray-700">{cat}</p>
+                                        <p className="text-xs text-gray-400 mt-1">Get Word &rarr;</p>
+                                    </button>
+                                ))}
+                            </div>
+                        </main>
+                    </div>
+                );
+            }
+
+            if (view === 'verse' && currentVerse) {
+                return (
+                    <div className="max-w-md mx-auto min-h-screen bg-gray-900 text-white p-6 shadow-lg fade-in flex flex-col justify-between">
+                        <div>
+                            <button onClick={() => setView('home')} className="text-gray-400 text-sm font-semibold mb-8 hover:text-white">&larr; Back</button>
+
+                            <div className="mb-4">
+                                <span className="bg-gray-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider text-gray-300">
+                                    {currentVerse.category}
+                                </span>
+                            </div>
+
+                            <h2 className="text-3xl font-bold mb-4 font-serif">{currentVerse.ref}</h2>
+                            <p className="text-xl leading-relaxed font-serif mb-8 text-gray-100">
+                                "{currentVerse.text}" <span className="text-xs text-gray-500 align-top">NKJV</span>
+                            </p>
+
+                            <div className="bg-gray-800 rounded-xl p-1 flex mb-6">
+                                <button
+                                    onClick={() => setShowModern(false)}
+                                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${!showModern ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    Historical Context
+                                </button>
+                                <button
+                                    onClick={() => setShowModern(true)}
+                                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${showModern ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    Modern Application
+                                </button>
+                            </div>
+
+                            <div className="bg-gray-800 p-5 rounded-xl border border-gray-700 fade-in">
+                                <p className="text-sm text-gray-300 leading-relaxed">
+                                    {!showModern ? currentVerse.historical : currentVerse.modern}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 space-y-4">
+                            <div className="bg-green-900/30 border border-green-800 p-4 rounded-xl">
+                                <p className="text-xs text-green-400 font-bold uppercase mb-1">Small Group Spark</p>
+                                <p className="text-sm text-green-100 font-medium italic">"{currentVerse.question}"</p>
+                            </div>
+
+                            <button
+                                onClick={shareToWhatsApp}
+                                className="w-full bg-[#25D366] text-white font-bold py-4 rounded-xl shadow-lg hover:bg-[#1ebe57] transition-colors flex justify-center items-center gap-2"
+                            >
+                                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964 1.003-3.509c-.636-1.0-1.019-2.182-1.019-3.424 0-4.996 4.07-9.066 9.066-9.066 4.996 0 9.065 4.07 9.065 9.066 0 4.996-4.069 9.066-9.066 9.066z"/></svg>
+                                Share to WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
